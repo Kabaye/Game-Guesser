@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>edu.bsu</groupId>
-    <artifactId>movie-genre-guesser</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>movie-genre-guesser</name>
-    <description>Small Movie Genre Guesser</description>
+    <artifactId>games-genre-guesser</artifactId>
+    <version>1.0.0</version>
+    <name>Games genre guesser</name>
+    <description>Small Games Genre Guesser</description>
 
     <properties>
         <java.version>14</java.version>

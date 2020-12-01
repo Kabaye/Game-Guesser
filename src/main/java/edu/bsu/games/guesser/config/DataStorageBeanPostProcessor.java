@@ -5,6 +5,7 @@ import edu.bsu.games.guesser.data.storage.Game;
 import edu.bsu.games.guesser.data.storage.Genre;
 import edu.bsu.games.guesser.utils.ArrayUtils;
 import edu.bsu.games.guesser.utils.StringUtils;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,6 +41,16 @@ public class DataStorageBeanPostProcessor implements BeanPostProcessor {
     }
 
     private DataStorage fulfillDataStorage(DataStorage dataStorage) {
+        dataStorage.getGenres().sort(Comparator.comparing(Genre::getGenre));
+        for (Genre genre : dataStorage.getGenres()) {
+            for (Game game : genre.getExamples()) {
+                game.getFeatures().sort(Comparator.naturalOrder());
+            }
+            genre.getExamples().sort(Comparator.comparing(Game::getName));
+        }
+
+        dataStorage.getAllFeatures().sort(Comparator.naturalOrder());
+
         String generalBitMap = dataStorage.getAllFeatures().stream().map(s -> "0").collect(Collectors.joining());
         for (Genre genre : dataStorage.getGenres()) {
             for (Game game : genre.getExamples()) {
@@ -49,7 +60,7 @@ public class DataStorageBeanPostProcessor implements BeanPostProcessor {
                     bitMap.replace(i, i + 1, "1");
                 }
                 String bitMapOfFeatures = bitMap.toString();
-                game.setBitMapOfFeatures(bitMapOfFeatures);
+                game.setFeaturesBitSet(bitMapOfFeatures);
                 genre.getBitMapsOfExamples().add(bitMapOfFeatures);
             }
         }
@@ -76,7 +87,17 @@ public class DataStorageBeanPostProcessor implements BeanPostProcessor {
                 a[i][j] = Math.abs(temporaryB[j] - b[i]);
             }
         }
-        log.info("Values in feature matrix: {}", StringUtils.toString(a));
-        return dataStorage.setFeaturesValues(a);
+
+
+        Double[] featuresValuesSum = ArrayUtils.fulfillArray(dataStorage.getGenres().size(), Double.class, () -> 0.0);
+        for (int i = 0; i < dataStorage.getGenres().size(); i++) {
+            for (int j = 0; j < dataStorage.getAllFeatures().size(); j++) {
+                featuresValuesSum[i] += a[j][i];
+            }
+        }
+
+        log.debug("Values in feature matrix: {}", StringUtils.toString(a));
+        return dataStorage.setFeaturesValues(a)
+                .setFeaturesValuesSum(featuresValuesSum);
     }
 }

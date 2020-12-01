@@ -1,10 +1,18 @@
 package edu.bsu.games.guesser.engine;
 
 import edu.bsu.games.guesser.data.storage.DataStorage;
+import edu.bsu.games.guesser.data.storage.Game;
+import edu.bsu.games.guesser.data.storage.Genre;
 import edu.bsu.games.guesser.shutdown.ShutdownManager;
+import edu.bsu.games.guesser.utils.ArrayUtils;
 import edu.bsu.games.guesser.utils.FunctionsMap;
+import edu.bsu.games.guesser.utils.Pair;
 import edu.bsu.games.guesser.view.ViewController;
 import java.awt.EventQueue;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -61,7 +69,30 @@ public class GameEngine {
     }
 
     public void startGame() {
+        String unknownGenreFeaturesBitSet = viewController.showFeaturesMenu();
 
+//        String[] split = unknownGenreFeaturesBitSet.split("");
+//        List<String> featureNames = IntStream.range(0, dataStorage.getAllFeatures().size())
+//                .mapToObj(value -> Pair.of(value, split[value]))
+//                .filter(pair -> pair.getSecond().equals("1"))
+//                .map(pair -> dataStorage.getAllFeatures().get(pair.getFirst()))
+//                .collect(Collectors.toList());
+
+
+        Double[] featuresCheckArr = ArrayUtils.fulfillArray(dataStorage.getGenres().size(), Double.class, () -> 0.0);
+        double max = -1.0;
+        Genre genre = null;
+        int i = 0;
+        for (Genre currentGenre : dataStorage.getGenres()) {
+            double mu = calcMu(currentGenre, unknownGenreFeaturesBitSet, i);
+            featuresCheckArr[i] = mu;
+            if (mu > max) {
+                max = mu;
+                genre = currentGenre;
+            }
+            i++;
+        }
+        viewController.showResult(Objects.requireNonNull(genre).getGenre(), featuresCheckArr);
     }
 
     public void shutdown() {
@@ -69,6 +100,20 @@ public class GameEngine {
     }
 
     public void showTrainingSet() {
+        viewController.showTrainingSet();
+    }
 
+    private Double calcMu(Genre currentGenre, String featureBitSet, int genreIndex) {
+        double max = -1;
+        for (Game game : currentGenre.getExamples()) {
+            double c = 0;
+            for (int i = 0; i < dataStorage.getAllFeatures().size(); i++) {
+                c += (featureBitSet.substring(i, i + 1).equals(game.getFeaturesBitSet().substring(i, i + 1)) ? 1 : -1)
+                        * dataStorage.getFeaturesValues()[i][genreIndex];
+            }
+            c = (dataStorage.getFeaturesValuesSum()[genreIndex] != 0) ? c / dataStorage.getFeaturesValuesSum()[genreIndex] : 0;
+            max = Math.max(c, max);
+        }
+        return max;
     }
 }

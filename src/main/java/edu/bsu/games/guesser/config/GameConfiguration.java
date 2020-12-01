@@ -4,7 +4,7 @@ import edu.bsu.games.guesser.data.storage.DataStorage;
 import edu.bsu.games.guesser.data.storage.Game;
 import edu.bsu.games.guesser.data.storage.Genre;
 import edu.bsu.games.guesser.utils.FileUtils;
-import java.util.stream.Collectors;
+import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

@@ -15,4 +15,5 @@ public class DataStorage {
     private final List<String> allFeatures;
     private final List<Genre> genres;
     private Double[][] featuresValues;
+    private Double[] featuresValuesSum;
 }
